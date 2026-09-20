@@ -98,14 +98,42 @@ The effect should not be interpreted as recovery of frequencies or geological in
 
 ## Results
 
-The supplied experimental figures from my master's work show the seismic section before and after application of the VRE procedure.
+The figures below show the application of VRE to the experimental seismic section used during my master's work. They provide a direct visual comparison between the input section and the result after applying the nonlinear moving-window enhancement.
 
-The processed section exhibits sharper local reflection amplitudes while retaining the principal reflector geometry. The corresponding normalized spectral comparison illustrates the spectral changes introduced by the nonlinear sharpening operation.
+### Seismic section before VRE
 
-These figures should be interpreted as demonstrations of the algorithm on the available experimental data rather than as proof of general performance.
+![Original seismic section before VRE](figures/original_section.png)
 
-A more rigorous quantitative evaluation would require a dataset with a known reference together with defined metrics for quantities such as temporal resolution, amplitude fidelity, event continuity, and signal-to-noise ratio.
+The original seismic section contains the reflection events before application of the VRE transform.
 
+### Seismic section after VRE
+
+![Seismic section after VRE](figures/vre_section.png)
+
+After VRE processing, the principal reflector geometry and polarity are retained while individual reflection events appear narrower and more sharply defined. This is the expected effect of the nonlinear local-amplitude transformation.
+
+The comparison should be interpreted as **enhancement of reflections already present in the input section**, rather than recovery or creation of previously absent seismic events.
+
+### Normalized amplitude spectrum
+
+![Normalized amplitude spectrum before and after VRE](figures/normalized_spectrum.png)
+
+The normalized spectral comparison shows the change in spectral content produced by VRE. Sharpening a seismic wavelet in the time domain modifies its spectrum and can increase its relative high-frequency content.
+
+This behavior is consistent with the results reported by Rashed and Atef (2020), who observed increased high-frequency spectral amplitudes following VRE processing and associated this with improved apparent temporal resolution.
+
+The spectral change should not, however, be interpreted as independent recovery of geological information or frequencies that were absent from the original measurements. VRE is a nonlinear enhancement procedure applied to existing seismic amplitudes.
+
+### Interpretation
+
+Taken together, the experimental results illustrate the main intended behavior of VRE:
+
+- reflection events become visually sharper;
+- the main reflector geometry remains recognizable;
+- local lower-amplitude samples surrounding reflection peaks are suppressed relative to the peaks;
+- the resulting wavelet sharpening changes the normalized frequency spectrum.
+
+These figures provide a qualitative demonstration of the method on the available experimental dataset. A rigorous quantitative evaluation would additionally require a trusted reference dataset and predefined measures of temporal resolution, waveform or amplitude fidelity, and signal-to-noise ratio.
 ## Installation
 
 Python 3.10 or newer is recommended.
