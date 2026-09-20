@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+build/
+dist/
+*.egg-info/
+results/
+data/*.mat
+data/*.sgy
+data/*.segy
+!data/README.md
