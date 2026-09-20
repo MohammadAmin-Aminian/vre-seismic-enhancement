@@ -1,43 +1,110 @@
-# VRE seismic amplitude enhancement
+# VRE — Virtual Resolution Enhancement for Seismic Data
 
-A compact, reproducible Python implementation of the variable-range enhancement (VRE) experiment developed during my master's research in seismic data processing.
+A compact, reproducible Python implementation of **Virtual Resolution Enhancement (VRE)** for seismic data, developed from MATLAB experiments conducted during my master's research in seismic data processing.
 
-VRE applies a nonlinear, moving-window amplitude transform separately to positive and negative samples. Its purpose is to emphasize locally coherent reflection amplitudes in a seismic section while retaining polarity. This repository preserves the numerical procedure in the original MATLAB script, removes memory-heavy intermediate arrays, and provides a command-line workflow for repeatable experiments.
+VRE is a nonlinear, moving-window seismic enhancement technique introduced by **Rashed and Atef (2020)**. It operates separately on the positive and negative components of each seismic trace, sharpening major reflections while preserving their polarity and peak positions.
 
-![Before and after seismic sections](figures/before_after.jpg)
+This repository preserves the numerical procedure used in my original MATLAB implementation, removes memory-heavy intermediate arrays, and provides a clean Python package and command-line workflow for reproducible experiments.
 
 ## Scientific context
 
-Ground roll is coherent, high-amplitude, low-frequency surface-wave energy that can mask reflection events in seismic records. Conventional attenuation methods, including frequency and frequency-wavenumber filters, can suppress ground roll but may also remove useful reflection energy when their spectral or apparent-velocity content overlaps.
+**Virtual Resolution Enhancement (VRE)** was introduced by Mohamed A. Rashed and Ali H. Atef as a post-stack enhancement technique for seismic sections.
 
-The related published research by Aminian and Riahi uses GARCH-derived conditional standard deviation and clustering to identify useful energy within conventionally attenuated noise and return selected signal components to the filtered data. It reports tests on synthetic and experimental seismic data, including stacked and 3-D cases.
+The method is intended primarily to improve the visualization and interpretability of existing seismic reflections. By applying a nonlinear amplitude transformation within a moving window, VRE sharpens reflection wavelets, reduces their apparent smearing and irregularities, and can increase the apparent temporal resolution and lateral coherence of major reflections.
 
-The VRE code in this repository is an amplitude-enhancement experiment associated with that broader research context. It does **not** implement the paper's GARCH estimation or K-means workflow. Keeping this distinction clear makes the code and the scientific claims auditable.
+The underlying idea is simple. After amplitudes within a local window are normalized by their local peak, values between zero and one become progressively smaller when raised to a power greater than one, whereas the normalized peak remains equal to one. After restoring the original amplitude scale, the peak is retained while surrounding lower-amplitude samples are suppressed. The resulting reflection therefore becomes narrower and sharper.
 
-Related publication:
+Because seismic traces contain both positive and negative amplitudes, VRE processes the positive and negative components separately before recombining them.
 
-> M. A. Aminian and M. A. Riahi, “Enhanced data fidelity after ground roll attenuation using conditional standard deviation clustering obtained from the GARCH model,” *Exploration Geophysics*, 54(3), 271–287, 2023. [https://doi.org/10.1080/08123985.2022.2135430](https://doi.org/10.1080/08123985.2022.2135430)
+Rashed and Atef tested VRE on several land and marine post-stack seismic sections. Their examples showed sharper and more clearly defined reflections and an increase in the high-frequency portion of the amplitude spectrum following VRE processing.
+
+VRE should nevertheless be interpreted as an **enhancement procedure rather than a method for recovering missing subsurface information**. The original paper explicitly notes that VRE does not reveal hidden features or generate new reflections; instead, it enhances reflections already present in the seismic data.
+
+### Original VRE publication
+
+> Mohamed A. Rashed and Ali H. Atef,  
+> **“Virtual resolution enhancement: A new enhancement tool for seismic data.”**  
+> *Open Geosciences*, 12(1), 363–375, 2020.  
+> DOI: 10.1515/geo-2020-0169
+
+The implementation in this repository is my Python reconstruction and optimization of the VRE experiment used during my master's work. It is **not the original software of Rashed and Atef**.
 
 ## Method
 
-For every trace, the input is split into non-negative and negative components. Within each overlapping window, each component is normalized using its local extreme amplitude, raised to a configurable power, and rescaled:
+Consider a seismic trace \(x\). VRE first separates it into positive and negative components:
+
+```text
+x+ = max(x, 0)
+x- = min(x, 0)
+```
+
+A sliding window is then moved along each trace.
+
+For every window, the positive samples are normalized by the maximum positive amplitude in that window, while the negative samples are normalized by the minimum negative amplitude.
+
+For a power parameter `r > 1`, the transformation is:
 
 ```text
 positive: y = max(x) * (x / max(x))^r
 negative: y = min(x) * (x / min(x))^r
 ```
 
-The estimates from all windows containing a sample are averaged, then the positive and negative results are recombined. The original settings are a window parameter of `80` (an inclusive span of 81 samples) and a power of `3`.
+The local peak therefore remains unchanged because
 
-The Python implementation produces the same transform without constructing the original `nt × nt × nx` arrays. Memory use therefore scales with the 2-D section instead of the square of the sample count.
+```text
+1^r = 1
+```
+
+while normalized amplitudes smaller than one decrease:
+
+```text
+0 < a < 1  →  a^r < a    for r > 1
+```
+
+Increasing `r` consequently suppresses samples surrounding a local peak more strongly and produces a sharper wavelet.
+
+Because successive sliding windows overlap, a given sample can receive several VRE estimates. Following the original procedure, estimates from all windows containing that sample are averaged. The processed positive and negative components are then recombined to obtain the enhanced trace.
+
+The procedure is repeated independently for every trace in the seismic section.
+
+## Implementation
+
+The original MATLAB experiment stores the results of individual sliding-window operations in large intermediate arrays before averaging them.
+
+This Python implementation performs the same moving-window transformation without constructing the original `nt × nt × nx` intermediate arrays.
+
+As a result, memory requirements scale primarily with the 2-D seismic section rather than with the square of the number of time samples.
+
+The original experimental settings preserved in this repository are:
+
+```text
+window parameter = 80
+power            = 3
+```
+
+In the original MATLAB indexing, `window = 80` corresponds to an **inclusive span of 81 samples**.
+
+These values reproduce the configuration of the supplied research script; they should not be interpreted as universally optimal VRE parameters.
+
+## Expected effect
+
+VRE primarily changes the **shape of reflection wavelets**.
+
+Samples close to local extrema are retained more strongly than lower-amplitude samples surrounding them. Consequently, reflections generally become narrower and visually sharper.
+
+This nonlinear sharpening also modifies the frequency content of the section. Rashed and Atef reported amplification of the higher-frequency portions of the amplitude spectra in their examples and interpreted the associated spectral broadening as an indication of increased temporal resolution.
+
+The effect should not be interpreted as recovery of frequencies or geological information that were absent from the original data. VRE enhances existing seismic events rather than creating new subsurface information.
 
 ## Results
 
-The supplied experimental figures show stronger local amplitudes after VRE while retaining the main reflector geometry. The normalized spectral comparison also shows close agreement over most of the recorded band, with changes concentrated at selected peaks. These plots are qualitative evidence; a final scientific assessment should also report a defined amplitude-fidelity or signal-to-noise metric on a dataset with a trusted reference.
+The supplied experimental figures from my master's work show the seismic section before and after application of the VRE procedure.
 
-![Original and VRE frequency spectra](figures/frequency_spectra.jpg)
+The processed section exhibits sharper local reflection amplitudes while retaining the principal reflector geometry. The corresponding normalized spectral comparison illustrates the spectral changes introduced by the nonlinear sharpening operation.
 
-![Normalized spectral comparison](figures/normalized_spectrum.jpg)
+These figures should be interpreted as demonstrations of the algorithm on the available experimental data rather than as proof of general performance.
+
+A more rigorous quantitative evaluation would require a dataset with a known reference together with defined metrics for quantities such as temporal resolution, amplitude fidelity, event continuity, and signal-to-noise ratio.
 
 ## Installation
 
@@ -70,7 +137,13 @@ vre data/Section_GARCH.mat \
   --output results/original
 ```
 
-The command writes the original and enhanced arrays to `vre_result.npz`, plus before/after and normalized-spectrum figures.
+The command writes the original and enhanced arrays to:
+
+```text
+vre_result.npz
+```
+
+and generates before/after seismic-section figures together with a normalized spectral comparison.
 
 ## Repository structure
 
@@ -82,23 +155,67 @@ The command writes the original and enhanced arrays to `vre_result.npz`, plus be
 ├── figures/               Selected results from the master's work
 ├── data/README.md          Instructions for locally held research data
 ├── VRE_3_original.m       Original MATLAB research script
-├── CITATION.cff            Software and article citation metadata
+├── CITATION.cff           Software and article citation metadata
 └── pyproject.toml          Package metadata and dependencies
 ```
 
 ## Numerical fidelity and corrections
 
-The moving-window transform deliberately preserves two details of the MATLAB code: `window = 80` means 81 samples because both endpoints are included, and the number of window starts is `nt - window`.
+The Python implementation deliberately preserves important details of the original MATLAB experiment.
 
-The plotting code corrects the original frequency-axis construction by deriving bins from the actual sample count and sampling interval. This affects plot coordinates, not the enhanced data. It also labels the horizontal section axis as trace number because the provided script does not include offset coordinates.
+In particular:
+
+- `window = 80` corresponds to 81 samples because both MATLAB window endpoints are included.
+- The number and positioning of sliding windows follow the indexing behavior of the original script.
+- Positive and negative amplitudes are processed independently.
+- Overlapping window estimates are averaged before the two polarity components are recombined.
+- The original power parameter is preserved.
+
+The plotting implementation corrects the frequency-axis construction used in the research script by deriving frequency bins directly from the actual number of samples and the specified sampling interval.
+
+This correction affects only the coordinates used for spectral visualization; it does **not** alter the VRE-enhanced seismic data.
+
+The horizontal section axis is labelled as **trace number** because physical offset coordinates are not provided by the original script.
+
+## Relationship to the published method
+
+This repository implements the core VRE procedure described by Rashed and Atef (2020):
+
+1. separate positive and negative seismic amplitudes;
+2. apply a sliding window along each trace;
+3. normalize samples using the local positive maximum or negative minimum;
+4. raise the normalized amplitudes to a user-defined power;
+5. restore the local amplitude scale;
+6. average estimates from overlapping windows;
+7. recombine the positive and negative components.
+
+The repository should therefore be considered an **independent Python implementation and optimization of the published VRE concept**, based on the MATLAB implementation used in my master's research.
+
+It is not an official implementation supplied by the authors of the original VRE paper.
 
 ## Limitations
 
-- VRE is nonlinear; changing the window or exponent changes amplitudes and must be justified for each dataset.
-- The included figures do not by themselves establish general performance or causal recovery of lost signal.
-- The research data are excluded because redistribution rights have not been established.
-- The GARCH and clustering method described in the article is outside this implementation.
+- VRE is a nonlinear seismic enhancement operation. The output depends on the selected window length, sliding behavior, and exponent.
+- Increasing the exponent produces stronger wavelet sharpening and therefore stronger modification of the original waveform.
+- Spectral broadening after VRE is partly a consequence of sharpening seismic wavelets and should not automatically be interpreted as recovery of independently measured high-frequency geological information.
+- VRE does not reveal reflections or geological structures that are absent from the original seismic data.
+- Interpretation of enhanced sections should therefore always consider the corresponding original data.
+- The figures included here demonstrate the behavior of the method but do not establish its general performance on arbitrary seismic datasets.
+- The original research dataset is excluded because redistribution rights have not been established.
+
+## Citation
+
+If you use the VRE methodology, please cite the publication that introduced the method:
+
+> Rashed, M. A., & Atef, A. H. (2020).  
+> **Virtual resolution enhancement: A new enhancement tool for seismic data.**  
+> *Open Geosciences, 12*(1), 363–375.  
+> DOI: 10.1515/geo-2020-0169
+
+If you use the software implementation from this repository, please also cite the repository using the metadata provided in `CITATION.cff`.
 
 ## License
 
-The code is available under the MIT License. Research data and published article content are governed by their respective owners and are not covered by this repository's software license.
+The software in this repository is available under the MIT License.
+
+The VRE methodology originates from the work of Rashed and Atef (2020). Research datasets, published figures, articles, and other third-party materials remain subject to their respective copyright and licensing terms and are not covered by this repository's software license.
