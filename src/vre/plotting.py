@@ -18,6 +18,18 @@ def save_comparison(
     """Save section and normalized-spectrum comparisons."""
     original = np.asarray(original)
     enhanced = np.asarray(enhanced)
+    if (
+        original.ndim != 2
+        or enhanced.shape != original.shape
+        or original.size == 0
+        or not np.isfinite(original).all()
+        or not np.isfinite(enhanced).all()
+    ):
+        raise ValueError(
+            "original and enhanced must be finite, nonempty 2-D arrays with matching shapes"
+        )
+    if not np.isfinite(sample_interval) or sample_interval <= 0:
+        raise ValueError("sample_interval must be finite and positive")
     output = Path(output)
     output.mkdir(parents=True, exist_ok=True)
 
@@ -39,19 +51,22 @@ def save_comparison(
     plt.close(fig)
 
     frequencies = np.fft.rfftfreq(original.shape[0], d=sample_interval)
-    # MATLAB's nanmean can leave isolated NaNs when one polarity is absent in
-    # every overlapping window. Treat those missing contributions as zero for
-    # display so a single sample cannot invalidate an entire trace spectrum.
     original_for_fft = np.nan_to_num(original)
     enhanced_for_fft = np.nan_to_num(enhanced)
     original_spectrum = np.max(np.abs(np.fft.rfft(original_for_fft, axis=0)), axis=1)
     enhanced_spectrum = np.max(np.abs(np.fft.rfft(enhanced_for_fft, axis=0)), axis=1)
-    original_spectrum /= original_spectrum.max()
-    enhanced_spectrum /= enhanced_spectrum.max()
+    for spectrum in (original_spectrum, enhanced_spectrum):
+        maximum = spectrum.max()
+        if maximum > 0:
+            spectrum /= maximum
     fig, axis = plt.subplots(figsize=(8, 4.5), constrained_layout=True)
     axis.plot(frequencies, original_spectrum, color="black", label="Data")
     axis.plot(frequencies, enhanced_spectrum, color="red", label="VRE")
-    axis.set(xlabel="Frequency (Hz)", ylabel="Normalized amplitude", xlim=(0, frequencies[-1]))
+    axis.set(
+        xlabel="Frequency (Hz)",
+        ylabel="Normalized amplitude",
+        xlim=(0, frequencies[-1]),
+    )
     axis.legend()
     fig.savefig(output / "normalized_spectrum.png", dpi=180)
     plt.close(fig)

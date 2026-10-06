@@ -25,13 +25,11 @@ def _enhance_polarity(
         segment = data[start:stop]
         scale = np.max(segment, axis=0) if positive else np.min(segment, axis=0)
         valid_trace = scale != 0
-        if not np.any(valid_trace):
-            continue
-
-        transformed = np.full_like(segment, np.nan)
-        transformed[:, valid_trace] = scale[valid_trace] * (
-            segment[:, valid_trace] / scale[valid_trace]
-        ) ** power
+        # An absent polarity contributes zero, not a missing observation.
+        transformed = np.zeros_like(segment)
+        transformed[:, valid_trace] = (
+            scale[valid_trace] * (segment[:, valid_trace] / scale[valid_trace]) ** power
+        )
         finite = np.isfinite(transformed)
         accumulator[start:stop] += np.where(finite, transformed, 0.0)
         counts[start:stop] += finite
@@ -81,11 +79,13 @@ def enhance_section(
         raise ValueError("window must be a positive integer")
     if window >= section.shape[0]:
         raise ValueError("window must be smaller than the number of samples")
-    if power <= 0:
-        raise ValueError("power must be positive")
+    if not np.isscalar(power) or not np.isfinite(power) or power <= 0:
+        raise ValueError("power must be finite and positive")
+    if section.shape[1] == 0:
+        raise ValueError("data must contain at least one trace")
 
     positive = np.where(section >= 0, section, 0.0)
     negative = np.where(section < 0, section, 0.0)
-    return _enhance_polarity(positive, window, power, positive=True) + _enhance_polarity(
-        negative, window, power, positive=False
-    )
+    return _enhance_polarity(
+        positive, window, power, positive=True
+    ) + _enhance_polarity(negative, window, power, positive=False)

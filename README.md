@@ -231,7 +231,11 @@ In particular:
 
 The plotting code corrects the original frequency-axis construction by deriving frequency bins from the actual number of samples and the sampling interval.
 
-This correction affects only the coordinates used for spectral visualization. It does **not** modify the VRE-enhanced seismic data.
+Version 0.1.1 also corrects missing-polarity windows: when a window contains no
+positive or no negative amplitudes, that polarity contributes zero. The original
+NaN behavior is intentionally not preserved. Constant positive, constant negative,
+and zero sections now retain finite amplitudes. Finite positive powers and sample
+intervals are required, and zero spectra are normalized without division by zero.
 
 The horizontal section axis is labelled as **trace number** because physical offset coordinates are not provided by the original script.
 

@@ -5,7 +5,7 @@ type: software
 authors:
   - family-names: Aminian
     given-names: Mohammad Amin
-version: 0.1.0
+version: 0.1.1
 license: MIT
 preferred-citation:
   type: article

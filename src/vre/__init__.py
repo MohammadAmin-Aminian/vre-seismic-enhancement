@@ -3,4 +3,4 @@
 from .core import enhance_section
 
 __all__ = ["enhance_section"]
-__version__ = "0.1.0"
+__version__ = "0.1.1"
