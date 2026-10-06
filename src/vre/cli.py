@@ -26,6 +26,9 @@ def build_parser() -> argparse.ArgumentParser:
         "--columns", default="149:200", help="Python slice, e.g. 149:200"
     )
     parser.add_argument("--output", type=Path, default=Path("results"))
+    parser.add_argument(
+        "--overwrite", action="store_true", help="replace existing result files"
+    )
     return parser
 
 
@@ -37,8 +40,14 @@ def _slice(text: str) -> slice:
     return slice(*values)
 
 
-def main() -> None:
-    args = build_parser().parse_args()
+def main(argv: list[str] | None = None) -> None:
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    if not np.isfinite(args.sample_interval) or args.sample_interval <= 0:
+        parser.error("--sample-interval must be finite and positive")
+    targets = ("vre_result.npz", "before_after.png", "normalized_spectrum.png")
+    if not args.overwrite and any((args.output / name).exists() for name in targets):
+        parser.error("result files already exist; choose another output or --overwrite")
     data = load_mat_section(
         args.input,
         variable=args.variable,

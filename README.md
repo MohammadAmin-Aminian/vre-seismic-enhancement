@@ -288,3 +288,15 @@ If you use the software from this repository, please also cite the repository us
 The software in this repository is available under the MIT License.
 
 The VRE methodology originates from Rashed and Atef (2020). The original research dataset and externally published material remain subject to their respective copyright and licensing terms and are not covered by this repository's software license.
+
+## CLI safety and validation
+
+The CLI refuses to replace `vre_result.npz`, `before_after.png` or
+`normalized_spectrum.png` by default. Choose a new output directory, or pass
+`--overwrite` intentionally. Sample interval must be finite and positive and is
+validated before input loading or output creation.
+
+Tests exercise a real MAT file through the CLI, compare the saved arrays with
+the numerical API, check both PNG files and verify that rejected reruns preserve
+existing output. Synthetic checks do not establish improvement on a field dataset.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the development workflow.
