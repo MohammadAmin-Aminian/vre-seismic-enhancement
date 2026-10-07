@@ -16,6 +16,9 @@ dependencies = [
   "matplotlib>=3.7",
 ]
 
+[project.optional-dependencies]
+dev = ["pytest>=8,<10", "build>=1"]
+
 [project.scripts]
 vre = "vre.cli:main"
 
