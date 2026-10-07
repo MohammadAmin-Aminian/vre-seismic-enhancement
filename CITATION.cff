@@ -1,24 +1,24 @@
 cff-version: 1.2.0
-message: "If you use this software, please cite the repository and the related article."
-title: "VRE Seismic Amplitude Enhancement"
+message: "If you use this software, please cite this repository and the original VRE methodology."
+title: "VRE Seismic Enhancement"
 type: software
 authors:
   - family-names: Aminian
     given-names: Mohammad Amin
-version: 0.1.1
+version: 0.1.2
 license: MIT
+repository-code: "https://github.com/MohammadAmin-Aminian/vre-seismic-enhancement"
 preferred-citation:
   type: article
-  title: "Enhanced data fidelity after ground roll attenuation using conditional standard deviation clustering obtained from the GARCH model"
+  title: "Virtual resolution enhancement: A new enhancement tool for seismic data"
   authors:
-    - family-names: Aminian
-      given-names: Mohammad Amin
-    - family-names: Riahi
-      given-names: Mohammad Ali
-  journal: Exploration Geophysics
-  volume: 54
-  issue: 3
-  start: 271
-  end: 287
-  year: 2023
-  doi: 10.1080/08123985.2022.2135430
+    - family-names: Rashed
+      given-names: M. A.
+    - family-names: Atef
+      given-names: A. H.
+  journal: "Open Geosciences"
+  volume: 12
+  start: 363
+  end: 375
+  year: 2020
+  doi: "10.1515/geo-2020-0169"
