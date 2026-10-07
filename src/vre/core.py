@@ -1,4 +1,4 @@
-"""Core variable-range enhancement algorithm.
+"""Core Virtual Resolution Enhancement (VRE) algorithm.
 
 The implementation follows the numerical operations in the original MATLAB
 script while avoiding its large three-dimensional intermediate arrays.
@@ -45,7 +45,7 @@ def _enhance_polarity(
 def enhance_section(
     data: ArrayLike, window: int = 80, power: float = 3
 ) -> NDArray[np.float64]:
-    """Apply variable-range enhancement to a 2-D seismic section.
+    """Apply Virtual Resolution Enhancement (VRE) to a 2-D seismic section.
 
     Parameters
     ----------
