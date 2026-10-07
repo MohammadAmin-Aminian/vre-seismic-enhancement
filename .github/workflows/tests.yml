@@ -1,7 +1,10 @@
 name: Regression tests
+
 on: [push, pull_request]
+
 permissions:
   contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -10,5 +13,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: python -m pip install -e . pytest
+      - run: python -m pip install -e '.[dev]'
       - run: MPLBACKEND=Agg python -m pytest -q
+      - run: vre --help
+      - run: python -m build
