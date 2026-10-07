@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "vre-seismic-enhancement"
 version = "0.1.2"
-description = "A clean Python implementation of variable-range amplitude enhancement for seismic sections"
+description = "A reproducible Python implementation of Virtual Resolution Enhancement (VRE) for seismic sections"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
