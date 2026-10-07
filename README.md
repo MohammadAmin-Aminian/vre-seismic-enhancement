@@ -1,5 +1,8 @@
 # VRE Seismic Enhancement
 
+[![Regression tests](https://github.com/MohammadAmin-Aminian/vre-seismic-enhancement/actions/workflows/tests.yml/badge.svg)](https://github.com/MohammadAmin-Aminian/vre-seismic-enhancement/actions/workflows/tests.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 A compact, reproducible Python implementation of **Virtual Resolution Enhancement (VRE)** for seismic data, based on the method proposed by Rashed and Atef (2020) and implemented during my master's research in seismic data processing.
 
 VRE is a nonlinear, moving-window amplitude transformation designed to sharpen seismic reflection events and improve their apparent temporal resolution while preserving polarity.
@@ -300,3 +303,16 @@ Tests exercise a real MAT file through the CLI, compare the saved arrays with
 the numerical API, check both PNG files and verify that rejected reruns preserve
 existing output. Synthetic checks do not establish improvement on a field dataset.
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the development workflow.
+
+
+## Tests and continuous integration
+
+Run the numerical and CLI regression tests with:
+
+```bash
+MPLBACKEND=Agg python -m pytest -q
+```
+
+GitHub Actions runs the test suite on pushes and pull requests. The tests cover
+numerical equivalence to a literal translation of the original MATLAB workflow,
+input validation, constant-polarity edge cases and the command-line interface.
